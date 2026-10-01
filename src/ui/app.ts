@@ -1,5 +1,6 @@
 import { localToday } from '../domain/date';
 import type { TrackerData } from '../domain/model';
+import { watchDate } from './clock';
 import { todayView } from './today';
 import { runForm } from './run-form';
 import { read, write } from '../storage/local-store';
@@ -11,7 +12,7 @@ export function mount(root: HTMLElement, today = localToday): () => void {
   const notice = root.querySelector<HTMLElement>('#notice')!;
   function render() {
     if (data) {
-      content.innerHTML = todayView(data, today()) + '<button data-add>记录跑步 ＋</button><div id="form-host"></div>'; 
+      content.innerHTML = '<div id="today">' + todayView(data, today()) + '</div>' + '<button data-add>记录跑步 ＋</button><div id="form-host"></div>'; 
       content.querySelector<HTMLButtonElement>('[data-add]')!.onclick = () => {
         runForm(content.querySelector('#form-host')!, data!.startDate, today(), run => {
           try { data = write({...data!, runs:[...data!.runs, run]}, today()); }
@@ -31,5 +32,10 @@ export function mount(root: HTMLElement, today = localToday): () => void {
   }
   try { data = read(today()); render(); }
   catch { notice.textContent = '无法读取本地数据，原始记录已保留。'; }
-  return () => { /* No event subscriptions yet. */ };
+  return watchDate(today, () => {
+    const view = content.querySelector('#today');
+    if (data && view) view.innerHTML = todayView(data, today());
+    const input = content.querySelector<HTMLInputElement>('[name=date]');
+    if (input) input.max = today();
+  });
 }
