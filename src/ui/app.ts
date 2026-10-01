@@ -1,5 +1,6 @@
 import { localToday } from '../domain/date';
 import type { TrackerData } from '../domain/model';
+import { runForm } from './run-form';
 import { read, write } from '../storage/local-store';
 
 export function mount(root: HTMLElement, today = localToday): () => void {
@@ -8,7 +9,17 @@ export function mount(root: HTMLElement, today = localToday): () => void {
   const content = root.querySelector<HTMLElement>('#content')!;
   const notice = root.querySelector<HTMLElement>('#notice')!;
   function render() {
-    if (data) { content.innerHTML = '<h1>跑步计划</h1>'; return; }
+    if (data) {
+      content.innerHTML = '<h1>跑步计划</h1><button data-add>记录跑步 ＋</button><div id="form-host"></div>';
+      content.querySelector<HTMLButtonElement>('[data-add]')!.onclick = () => {
+        runForm(content.querySelector('#form-host')!, data!.startDate, today(), run => {
+          try { data = write({...data!, runs:[...data!.runs, run]}, today()); }
+          catch { throw Error('无法保存，请检查浏览器的存储权限。'); }
+          notice.textContent = '已保存'; render();
+        }, render);
+      };
+      return;
+    }
     content.innerHTML = `<section class="card setup"><p class="eyebrow">从这一天开始</p><h1>给跑步，留一点时间。</h1><p>隔天出发。工作日 5 公里，周末 10 公里。<br>每一步都记下，每次跑完再安排下一次。</p><form><label>开始日期<input name="startDate" type="date" required value="${today()}"></label><button type="submit">开始跑步计划 →</button></form></section>`;
     content.querySelector('form')!.onsubmit = event => {
       event.preventDefault();
