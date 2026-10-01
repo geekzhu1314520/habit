@@ -1,5 +1,5 @@
 import { localToday } from '../domain/date';
-import type { TrackerData } from '../domain/model';
+import type { Run, TrackerData } from '../domain/model';
 import { historyView } from './history';
 import { watchDate } from './clock';
 import { todayView } from './today';
@@ -14,13 +14,21 @@ export function mount(root: HTMLElement, today = localToday): () => void {
   function render() {
     if (data) {
       content.innerHTML = '<div id="today">' + todayView(data, today()) + '</div>' + '<button data-add>记录跑步 ＋</button><div id="form-host"></div><div id="history-host">' + historyView(data,today()) + '</div>';  
-      content.querySelector<HTMLButtonElement>('[data-add]')!.onclick = () => {
+      const edit = (original?: Run) => {
         runForm(content.querySelector('#form-host')!, data!.startDate, today(), run => {
-          try { data = write({...data!, runs:[...data!.runs, run]}, today()); }
+          const runs = original ? data!.runs.map(item => item.id === original.id ? run : item) : [...data!.runs, run];
+          try { data = write({...data!, runs}, today()); }
           catch { throw Error('无法保存，请检查浏览器的存储权限。'); }
           notice.textContent = '已保存'; render();
-        }, render);
+        }, render, original);
       };
+      content.querySelector<HTMLButtonElement>('[data-add]')!.onclick = () => edit();
+      content.querySelectorAll<HTMLElement>('[data-index]').forEach(host => {
+        const run = data!.runs[Number(host.dataset.index)];
+        const button = document.createElement('button');
+        button.textContent = '编辑'; button.className = 'text-button'; button.dataset.edit = '';
+        button.onclick = () => edit(run); host.append(button);
+      });
       return;
     }
     content.innerHTML = `<section class="card setup"><p class="eyebrow">从这一天开始</p><h1>给跑步，留一点时间。</h1><p>隔天出发。工作日 5 公里，周末 10 公里。<br>每一步都记下，每次跑完再安排下一次。</p><form><label>开始日期<input name="startDate" type="date" required value="${today()}"></label><button type="submit">开始跑步计划 →</button></form></section>`;
