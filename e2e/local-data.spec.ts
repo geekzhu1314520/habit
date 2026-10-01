@@ -3,10 +3,13 @@ test("记录留在当前浏览器，重新打开保留，无外部请求", async
   page,
   context,
   browser,
+  baseURL,
 }) => {
+  if (!baseURL) throw new Error("E2E requires a configured baseURL");
+  const origin = new URL(baseURL).origin;
   const external: string[] = [];
-  page.on("request", (r) => {
-    if (!r.url().startsWith("http://127.0.0.1:5173/")) external.push(r.url());
+  context.on("request", (r) => {
+    if (new URL(r.url()).origin !== origin) external.push(r.url());
   });
   await page.goto("/");
   await page.getByRole("button", { name: "开始跑步计划 →" }).click();
@@ -17,9 +20,9 @@ test("记录留在当前浏览器，重新打开保留，无外部请求", async
   const reopened = await context.newPage();
   await reopened.goto("/");
   await expect(reopened.locator("[data-count]")).toHaveText("1");
-  const separate = await browser.newContext();
+  const separate = await browser.newContext({ baseURL });
   const fresh = await separate.newPage();
-  await fresh.goto("http://127.0.0.1:5173/");
+  await fresh.goto("/");
   await expect(
     fresh.getByRole("button", { name: "开始跑步计划 →" }),
   ).toBeVisible();

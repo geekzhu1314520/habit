@@ -9,6 +9,8 @@ jobs:
       matrix:
         walking: ['false', 'true']
     env:
+      # Exercise configurable origins so hard-coded default ports fail in CI.
+      HABIT_TEST_PORT: '5187'
       VITE_WALKING_ENABLED: ${{ matrix.walking }}
     steps:
       - uses: actions/checkout@v4
