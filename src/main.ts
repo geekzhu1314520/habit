@@ -1,1 +1,2 @@
-document.querySelector('#app')!.textContent = '一步 · 跑步记录';
+import { mount } from './ui/app';
+mount(document.querySelector<HTMLElement>('#app')!);
