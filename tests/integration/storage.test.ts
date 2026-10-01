@@ -16,3 +16,8 @@ it('外部变更不静默覆盖，重新加载保留草稿',()=>{
  expect(document.body.textContent).toContain('其他标签页');document.querySelector<HTMLButtonElement>('[data-reload]')!.click();
  expect(document.querySelector<HTMLInputElement>('[name=distance]')!.value).toBe('3');document.querySelector('form')!.dispatchEvent(new Event('submit',{cancelable:true}));expect(JSON.parse(localStorage.getItem(KEY)!).runs).toHaveLength(2);
 });
+it('重新加载损坏的外部数据时仍保留草稿',()=>{
+ localStorage.setItem(KEY,JSON.stringify(initial));open();document.querySelector<HTMLButtonElement>('[data-add]')!.click();document.querySelector<HTMLInputElement>('[name=distance]')!.value='3';
+ localStorage.setItem(KEY,'broken');window.dispatchEvent(new StorageEvent('storage',{key:KEY}));document.querySelector<HTMLButtonElement>('[data-reload]')!.click();
+ expect(document.body.textContent).toContain('无法读取');expect(document.querySelector<HTMLInputElement>('[name=distance]')?.value).toBe('3');expect(localStorage.getItem(KEY)).toBe('broken');
+});

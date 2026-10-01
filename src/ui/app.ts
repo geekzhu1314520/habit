@@ -46,6 +46,12 @@ export function mount(root: HTMLElement, today = localToday): () => void {
       const date = content.querySelector<HTMLInputElement>('[name=date]')?.value;
       const distance = content.querySelector<HTMLInputElement>('[name=distance]')?.value;
       const previous = editing;
+      try { read(today()); }
+      catch {
+        notice.textContent = '无法读取其他标签页的数据，当前草稿与原始数据已保留。请修复数据后重试。';
+        notice.append(button);
+        return;
+      }
       load();
       if (data && !conflict && date !== undefined) {
         if (previous && !data.runs.some(run => run.id === previous.id)) {
