@@ -59,26 +59,12 @@ export function mount(root: HTMLElement, today = localToday): () => void {
     };
     notice.append(button);
   }
-  function render() {
-    if (data) {
-      content.innerHTML = '<div id="today">' + todayView(data, today()) + '</div>' + '<button data-add>记录跑步 ＋</button><div id="form-host"></div><div id="history-host">' + historyView(data,today()) + '</div>';  
-      const edit = (original?: Run) => {
-        editing = original;
-        runForm(content.querySelector('#form-host')!, data!.startDate, today(), run => {
-          if (original && !data!.runs.some(item => item.id === original.id)) throw Error('该记录已删除，请取消后重新记录。');
-          const runs = original ? data!.runs.map(item => item.id === original.id ? run : item) : [...data!.runs, run];
-          try { data = save({...data!, runs}); }
-          catch { throw Error('无法保存，请检查浏览器的存储权限。'); }
-          notice.textContent = '已保存'; render();
-        }, render, original);
-      };
-      openEditor = edit;
-      content.querySelector<HTMLButtonElement>('[data-add]')!.onclick = () => edit();
+  function bindHistory() {
       content.querySelectorAll<HTMLElement>('[data-index]').forEach(host => {
         const run = data!.runs[Number(host.dataset.index)];
         const button = document.createElement('button');
         button.textContent = '编辑'; button.className = 'text-button'; button.dataset.edit = '';
-        button.onclick = () => edit(run); host.append(button);
+        button.onclick = () => openEditor(run); host.append(button);
         const remove = document.createElement('button');
         remove.textContent = '删除'; remove.className = 'text-button danger'; remove.dataset.delete = '';
         remove.onclick = () => {
@@ -88,6 +74,23 @@ export function mount(root: HTMLElement, today = localToday): () => void {
         };
         host.append(remove);
       });
+  }
+  function render() {
+    if (data) {
+      content.innerHTML = '<div id="today">' + todayView(data, today()) + '</div>' + '<button data-add>记录跑步 ＋</button><div id="form-host"></div><div id="history-host">' + historyView(data,today()) + '</div>';  
+      const edit = (original?: Run) => {
+        editing = original;
+        runForm(content.querySelector('#form-host')!, data!.startDate, today, run => {
+          if (original && !data!.runs.some(item => item.id === original.id)) throw Error('该记录已删除，请取消后重新记录。');
+          const runs = original ? data!.runs.map(item => item.id === original.id ? run : item) : [...data!.runs, run];
+          try { data = save({...data!, runs}); }
+          catch { throw Error('无法保存，请检查浏览器的存储权限。'); }
+          notice.textContent = '已保存'; render();
+        }, render, original);
+      };
+      openEditor = edit;
+      content.querySelector<HTMLButtonElement>('[data-add]')!.onclick = () => edit();
+      bindHistory();
       return;
     }
     content.innerHTML = `<section class="card setup"><p class="eyebrow">从这一天开始</p><h1>给跑步，留一点时间。</h1><p>隔天出发。工作日 5 公里，周末 10 公里。<br>每一步都记下，每次跑完再安排下一次。</p><form><label>开始日期<input name="startDate" type="date" required value="${today()}"></label><button type="submit">开始跑步计划 →</button></form></section>`;
@@ -104,6 +107,8 @@ export function mount(root: HTMLElement, today = localToday): () => void {
   const stopClock = watchDate(today, () => {
     const view = content.querySelector('#today');
     if (data && view) view.innerHTML = todayView(data, today());
+    const history = content.querySelector('#history-host');
+    if (data && history) { history.innerHTML = historyView(data, today()); bindHistory(); }
     const input = content.querySelector<HTMLInputElement>('[name=date]');
     if (input) input.max = today();
   });
