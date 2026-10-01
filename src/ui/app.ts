@@ -28,6 +28,14 @@ export function mount(root: HTMLElement, today = localToday): () => void {
         const button = document.createElement('button');
         button.textContent = '编辑'; button.className = 'text-button'; button.dataset.edit = '';
         button.onclick = () => edit(run); host.append(button);
+        const remove = document.createElement('button');
+        remove.textContent = '删除'; remove.className = 'text-button danger'; remove.dataset.delete = '';
+        remove.onclick = () => {
+          if (!window.confirm(`删除 ${run.date} 的 ${run.distanceMeters/1000} 公里记录？日程与累计将重新计算。`)) return;
+          try { data = write({...data!, runs:data!.runs.filter(item => item.id !== run.id)}, today()); notice.textContent = '已删除'; render(); }
+          catch { notice.textContent = '无法保存，记录未删除。'; }
+        };
+        host.append(remove);
       });
       return;
     }
