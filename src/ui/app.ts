@@ -1,5 +1,6 @@
 import { localToday } from '../domain/date';
 import type { TrackerData } from '../domain/model';
+import { todayView } from './today';
 import { runForm } from './run-form';
 import { read, write } from '../storage/local-store';
 
@@ -10,7 +11,7 @@ export function mount(root: HTMLElement, today = localToday): () => void {
   const notice = root.querySelector<HTMLElement>('#notice')!;
   function render() {
     if (data) {
-      content.innerHTML = '<h1>跑步计划</h1><button data-add>记录跑步 ＋</button><div id="form-host"></div>';
+      content.innerHTML = todayView(data, today()) + '<button data-add>记录跑步 ＋</button><div id="form-host"></div>'; 
       content.querySelector<HTMLButtonElement>('[data-add]')!.onclick = () => {
         runForm(content.querySelector('#form-host')!, data!.startDate, today(), run => {
           try { data = write({...data!, runs:[...data!.runs, run]}, today()); }
