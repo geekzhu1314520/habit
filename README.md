@@ -36,3 +36,14 @@ npm run test:e2e -- --project=chromium
 存储模块的 load/save、schema、版本与错误语义见 [存储契约](docs/storage-contract.md)。
 
 安全审查与部署要求见 [security-review.md](docs/security-review.md)。npm 安装脚本默认禁用；审计命令为 `npm audit --registry=https://registry.npmjs.org`。
+
+## 发布准备与步行实验
+
+发布清单、Netlify 方案、回滚和当前 NO-GO 原因见 [launch-plan.md](docs/launch-plan.md)。仅精确的 `VITE_WALKING_ENABLED=true` 在构建时启用步行，默认关闭；关闭不清除独立实验记录。
+
+```sh
+VITE_WALKING_ENABLED=true npm run dev -- --host 127.0.0.1 --port 5175
+VITE_WALKING_ENABLED=false npm run build
+```
+
+生产候选应使用 OFF 构建。`.github/workflows/verify.yml` 配置双状态检查，但需要仓库托管在 GitHub 后才会执行；本轮没有连接或发布远程仓库。
