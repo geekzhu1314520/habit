@@ -7,6 +7,7 @@ import type {
   StorageResult,
 } from "./contract";
 export type { SnapshotToken } from "./contract";
+export const MAX_STORAGE_CHARS = 2_000_000;
 export const KEY = "running-tracker:v1";
 export type StoragePort = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 const messages: Record<StorageErrorCode, string> = {
@@ -48,6 +49,7 @@ export function createLocalStore(
       }
       if (raw === null)
         return { ok: true, value: { state: "missing", token: token(raw) } };
+      if (raw.length > MAX_STORAGE_CHARS) return failure("INVALID_DATA");
       let parsed: unknown;
       try {
         parsed = JSON.parse(raw);
@@ -92,6 +94,7 @@ export function createLocalStore(
       }
       try {
         const raw = JSON.stringify(checked);
+        if (raw.length > MAX_STORAGE_CHARS) return failure("INVALID_DATA");
         port.setItem(KEY, raw);
         return { ok: true, value: { data: checked, token: token(raw) } };
       } catch (error) {

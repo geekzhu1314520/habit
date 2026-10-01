@@ -1,3 +1,4 @@
+import { escapeHtml } from "./html";
 import { parseKm, type Run } from "../domain/model";
 export function runForm(
   host: HTMLElement,
@@ -8,7 +9,7 @@ export function runForm(
   run?: Run,
 ) {
   const intentId = run?.id ?? crypto.randomUUID();
-  host.innerHTML = `<section class="card"><h2>${run ? "编辑跑步" : "记下这一次"}</h2><p>每次单独记录，当天距离自动累计。</p><form novalidate><label>跑步日期<input name="date" type="date" required aria-describedby="form-error" min="${start}" max="${today()}"></label><label>本次距离（公里）<input name="distance" inputmode="decimal" placeholder="例如 5.2" required aria-describedby="form-error"></label><p id="form-error" role="alert"></p><div class="actions"><button type="submit">保存跑步</button><button type="button" class="secondary" data-cancel>取消</button></div></form></section>`;
+  host.innerHTML = `<section class="card"><h2>${run ? "编辑跑步" : "记下这一次"}</h2><p>每次单独记录，当天距离自动累计。</p><form novalidate><label>跑步日期<input name="date" type="date" required aria-describedby="form-error" min="${escapeHtml(start)}" max="${escapeHtml(today())}"></label><label>本次距离（公里）<input name="distance" inputmode="decimal" placeholder="例如 5.2" required aria-describedby="form-error"></label><p id="form-error" role="alert"></p><div class="actions"><button type="submit">保存跑步</button><button type="button" class="secondary" data-cancel>取消</button></div></form></section>`;
   const date = host.querySelector<HTMLInputElement>("[name=date]")!;
   const distance = host.querySelector<HTMLInputElement>("[name=distance]")!;
   const error = host.querySelector<HTMLElement>("#form-error")!;

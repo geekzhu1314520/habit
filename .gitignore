@@ -6,3 +6,4 @@ playwright-report/
 .env*
 *.pem
 .DS_Store
+*.key

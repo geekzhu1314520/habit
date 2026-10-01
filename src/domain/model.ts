@@ -1,4 +1,17 @@
 import { validDate } from "./date";
+export const MAX_RUNS = 10000;
+function hasExactKeys(value: unknown, keys: string[]): boolean {
+  if (
+    !value ||
+    typeof value !== "object" ||
+    Object.getPrototypeOf(value) !== Object.prototype
+  )
+    return false;
+  return (
+    Object.keys(value).length === keys.length &&
+    keys.every((key) => Object.hasOwn(value, key))
+  );
+}
 export interface Run {
   id: string;
   date: string;
@@ -24,21 +37,24 @@ export function validate(value: unknown, today: string): TrackerData {
   const fail = (): never => {
     throw new Error("数据格式或版本无效，原始记录已保留");
   };
-  if (!value || typeof value !== "object") return fail();
+  if (!hasExactKeys(value, ["schemaVersion", "startDate", "runs"]))
+    return fail();
   const data = value as TrackerData;
   if (
     data.schemaVersion !== 1 ||
     !validDate(data.startDate) ||
-    !Array.isArray(data.runs)
+    !Array.isArray(data.runs) ||
+    data.runs.length > MAX_RUNS
   )
     return fail();
   const ids = new Set<string>();
   let total = 0;
   for (const run of data.runs) {
     if (
-      !run ||
+      !hasExactKeys(run, ["id", "date", "distanceMeters"]) ||
       typeof run.id !== "string" ||
       !run.id.trim() ||
+      run.id.length > 128 ||
       ids.has(run.id) ||
       !validDate(run.date) ||
       run.date < data.startDate ||

@@ -34,3 +34,5 @@ npm run test:e2e -- --project=chromium
 规格见 [SPEC.md](SPEC.md)，任务见 [tasks/plan.md](tasks/plan.md)，实际验证见 [docs/verification.md](docs/verification.md)。
 
 存储模块的 load/save、schema、版本与错误语义见 [存储契约](docs/storage-contract.md)。
+
+安全审查与部署要求见 [security-review.md](docs/security-review.md)。npm 安装脚本默认禁用；审计命令为 `npm audit --registry=https://registry.npmjs.org`。

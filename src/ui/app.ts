@@ -1,3 +1,4 @@
+import { escapeHtml } from "./html";
 import { localToday } from "../domain/date";
 import type { Run, TrackerData } from "../domain/model";
 import { historyView } from "./history";
@@ -186,7 +187,7 @@ export function mount(root: HTMLElement, today = localToday): () => void {
       bindHistory();
       return;
     }
-    content.innerHTML = `<section class="card setup"><p class="eyebrow">从这一天开始</p><h1>给跑步，留一点时间。</h1><p>隔天出发。工作日 5 公里，周末 10 公里。<br>每一步都记下，每次跑完再安排下一次。</p><form><label>开始日期<input name="startDate" type="date" required value="${today()}"></label><button type="submit">开始跑步计划 →</button></form></section>`;
+    content.innerHTML = `<section class="card setup"><p class="eyebrow">从这一天开始</p><h1>给跑步，留一点时间。</h1><p>隔天出发。工作日 5 公里，周末 10 公里。<br>每一步都记下，每次跑完再安排下一次。</p><form><label>开始日期<input name="startDate" type="date" required value="${escapeHtml(today())}"></label><button type="submit">开始跑步计划 →</button></form></section>`;
     content.querySelector("form")!.onsubmit = (event) => {
       event.preventDefault();
       const startDate =

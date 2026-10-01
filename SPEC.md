@@ -265,3 +265,7 @@ export function meetsTarget(
 界面使用中文并适配手机与桌面，技术栈、目录和测试工具仍为规格中的实施建议。
 
 Plan、Tasks 与 Implement 已按后续请求完成，详细任务与验证见 tasks/plan.md 和 docs/verification.md。
+
+## 存储安全边界补充
+
+文档只接受声明的字段，拒绝额外字段及非普通对象。原始 JSON 最多 2,000,000 个 UTF-16 字符，记录最多 10,000 条，id 最多 128 字符。超限不裁剪、不覆盖，返回 INVALID_DATA；正常 v1 数据格式不变。安全审查详见 [报告](docs/security-review.md)。

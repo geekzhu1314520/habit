@@ -1,3 +1,4 @@
+import { escapeHtml } from "./html";
 import { targetMeters } from "../domain/date";
 import { schedule } from "../domain/schedule";
 import type { TrackerData } from "../domain/model";
@@ -13,5 +14,5 @@ export function todayView(data: TrackerData, today: string): string {
     upcoming: "即将开始",
     rest: "今天休息一下",
   }[state.status];
-  return `<section class="card today"><p class="eyebrow">${today} · 跑步计划</p><h1>${title}</h1><p class="hero-distance"><strong>${meters / 1000}</strong><span> / ${target / 1000} 公里</span></p><p>今日累计 / 今日目标</p><progress max="${target}" value="${Math.min(meters, target)}" aria-label="今日跑量"></progress><p class="schedule">${state.dueDate < today ? `上次计划未完成 · ${state.dueDate}，今天可以补跑` : `下次计划 · ${state.dueDate}`}</p></section>`;
+  return `<section class="card today"><p class="eyebrow">${escapeHtml(today)} · 跑步计划</p><h1>${title}</h1><p class="hero-distance"><strong>${meters / 1000}</strong><span> / ${target / 1000} 公里</span></p><p>今日累计 / 今日目标</p><progress max="${target}" value="${Math.min(meters, target)}" aria-label="今日跑量"></progress><p class="schedule">${state.dueDate < today ? `上次计划未完成 · ${escapeHtml(state.dueDate)}，今天可以补跑` : `下次计划 · ${escapeHtml(state.dueDate)}`}</p></section>`;
 }
