@@ -1,5 +1,6 @@
 import { localToday } from '../domain/date';
 import type { TrackerData } from '../domain/model';
+import { historyView } from './history';
 import { watchDate } from './clock';
 import { todayView } from './today';
 import { runForm } from './run-form';
@@ -12,7 +13,7 @@ export function mount(root: HTMLElement, today = localToday): () => void {
   const notice = root.querySelector<HTMLElement>('#notice')!;
   function render() {
     if (data) {
-      content.innerHTML = '<div id="today">' + todayView(data, today()) + '</div>' + '<button data-add>记录跑步 ＋</button><div id="form-host"></div>'; 
+      content.innerHTML = '<div id="today">' + todayView(data, today()) + '</div>' + '<button data-add>记录跑步 ＋</button><div id="form-host"></div><div id="history-host">' + historyView(data,today()) + '</div>';  
       content.querySelector<HTMLButtonElement>('[data-add]')!.onclick = () => {
         runForm(content.querySelector('#form-host')!, data!.startDate, today(), run => {
           try { data = write({...data!, runs:[...data!.runs, run]}, today()); }
