@@ -32,3 +32,5 @@ npm run test:e2e -- --project=chromium
 数据保存在 `running-tracker:v1`，没有账号、云端同步或业务后端。清除网站数据、换浏览器或使用隐私模式可能导致数据丢失。本版本不提供导入导出或离线安装。编辑、补录和删除会从全部记录重算日程；多个标签页发现冲突后需要重新加载，不提供同时写入的事务保证。
 
 规格见 [SPEC.md](SPEC.md)，任务见 [tasks/plan.md](tasks/plan.md)，实际验证见 [docs/verification.md](docs/verification.md)。
+
+存储模块的 load/save、schema、版本与错误语义见 [存储契约](docs/storage-contract.md)。

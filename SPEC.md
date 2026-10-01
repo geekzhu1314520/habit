@@ -35,6 +35,8 @@
 
 ## 3. localStorage 数据模型
 
+模块接口与缺失、版本和错误行为见 [存储契约](docs/storage-contract.md)。当前格式保持 v1；未知旧版本不猜测迁移，原值保留。
+
 存储键：`running-tracker:v1`。一个 JSON 文档保存完整状态，避免日程、统计与记录分散存储产生不一致。
 
 ```ts

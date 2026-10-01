@@ -4,35 +4,48 @@ import { historyView } from "./history";
 import { watchDate } from "./clock";
 import { todayView } from "./today";
 import { runForm } from "./run-form";
-import { KEY, read, write } from "../storage/local-store";
+import {
+  KEY,
+  createLocalStore,
+  type SnapshotToken,
+} from "../storage/local-store";
 
 export function mount(root: HTMLElement, today = localToday): () => void {
   let data: TrackerData | null = null;
-  let baseline: string | null = null;
+  const store = createLocalStore({ today });
+  let baseline: SnapshotToken | null = null;
   let conflict = false;
   let editing: Run | undefined;
   let openEditor: (run?: Run) => void = () => {};
-  root.innerHTML = `<header><span class="brand">一步 / RUNNING JOURNAL</span><p>跑出自己的节奏。</p></header><div id="notice" role="alert"></div><section id="content"></section><footer>数据仅保存在此设备的当前浏览器；清除网站数据、更换浏览器或使用隐私模式可能导致记录丢失。</footer>`;
+  root.innerHTML = `<header><span class="brand">一步 / RUNNING JOURNAL</span><p>跑出自己的节奏。</p></header><div id="notice" role="status" aria-live="polite" aria-atomic="true"></div><main id="content"></main><footer>数据仅保存在此设备的当前浏览器；清除网站数据、更换浏览器或使用隐私模式可能导致记录丢失。</footer>`;
   const content = root.querySelector<HTMLElement>("#content")!;
   const notice = root.querySelector<HTMLElement>("#notice")!;
   function save(candidate: TrackerData) {
-    if (conflict || localStorage.getItem(KEY) !== baseline) {
+    if (conflict || baseline === null) {
       onExternal();
       throw Error("其他标签页已更改记录，请先重新加载。");
     }
-    const saved = write(candidate, today());
-    baseline = JSON.stringify(saved);
-    return saved;
+    const result = store.save({ data: candidate, expectedToken: baseline });
+    if (!result.ok) {
+      if (result.error.code === "CONFLICT") onExternal();
+      throw Error(result.error.message);
+    }
+    baseline = result.value.token;
+    return result.value.data;
   }
   function load() {
     try {
-      data = read(today());
-      baseline = localStorage.getItem(KEY);
+      const result = store.load();
+      if (!result.ok) throw Error(result.error.message);
+      data = result.value.state === "missing" ? null : result.value.data;
+      baseline = result.value.token;
       conflict = false;
       notice.textContent = "";
       render();
-    } catch {
-      notice.textContent = "无法读取本地数据，原始记录已保留。";
+    } catch (error) {
+      notice.textContent =
+        "无法读取本地数据：" +
+        (error instanceof Error ? error.message : "请重试");
       content.innerHTML =
         '<section class="card"><h1>记录暂时无法打开</h1><p>请检查浏览器存储权限。你可以重试；重新开始会清除本应用记录。</p><button data-reload>重试读取</button><button class="secondary" data-reset>清除本应用数据并重新开始</button></section>';
       content.querySelector<HTMLButtonElement>("[data-reload]")!.onclick = load;
@@ -43,7 +56,8 @@ export function mount(root: HTMLElement, today = localToday): () => void {
           )
             return;
           try {
-            localStorage.removeItem(KEY);
+            const result = store.reset();
+            if (!result.ok) throw Error(result.error.message);
             load();
           } catch {
             notice.textContent = "无法清除，请检查浏览器的存储权限。";
@@ -65,8 +79,11 @@ export function mount(root: HTMLElement, today = localToday): () => void {
         content.querySelector<HTMLInputElement>("[name=distance]")?.value;
       const previous = editing;
       try {
-        if (read(today()) === null && date !== undefined) {
-          notice.textContent = '其他标签页已清除计划。草稿已保留，请先取消本次输入，再重新加载。';
+        const result = store.load();
+        if (!result.ok) throw Error(result.error.message);
+        if (result.value.state === "missing" && date !== undefined) {
+          notice.textContent =
+            "其他标签页已清除计划。草稿已保留，请先取消本次输入，再重新加载。";
           notice.append(button);
           return;
         }
@@ -151,15 +168,15 @@ export function mount(root: HTMLElement, today = localToday): () => void {
             const runs = original
               ? data!.runs.map((item) => (item.id === original.id ? run : item))
               : [...data!.runs, run];
-            try {
-              data = save({ ...data!, runs });
-            } catch {
-              throw Error("无法保存，请检查浏览器的存储权限。");
-            }
+            data = save({ ...data!, runs });
             notice.textContent = "已保存";
             render();
+            content.querySelector<HTMLButtonElement>("[data-add]")?.focus();
           },
-          render,
+          () => {
+            render();
+            content.querySelector<HTMLButtonElement>("[data-add]")?.focus();
+          },
           original,
         );
       };

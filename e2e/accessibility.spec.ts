@@ -10,11 +10,20 @@ test("窄屏键盘记录与可读布局", async ({ page }) => {
     page.getByRole("heading", { name: "今天该跑", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "记录跑步 ＋" }).click();
+  await expect(page.getByRole("main")).toBeVisible();
+  await page.getByLabel("本次距离（公里）").fill("bad");
+  await page.getByRole("button", { name: "保存跑步" }).click();
+  await expect(page.getByLabel("本次距离（公里）")).toBeFocused();
+  await expect(page.getByLabel("本次距离（公里）")).toHaveAttribute(
+    "aria-invalid",
+    "true",
+  );
   await page.getByLabel("本次距离（公里）").fill("5");
   await page.getByRole("button", { name: "保存跑步" }).click();
   await expect(
     page.getByRole("heading", { name: "今天已完成", exact: true }),
   ).toBeVisible();
+  await expect(page.getByRole("button", { name: "记录跑步 ＋" })).toBeFocused();
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
