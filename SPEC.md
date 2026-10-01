@@ -1,6 +1,6 @@
 # 跑步习惯追踪器规格
 
-状态：产品待审阅事项已逐项确认，并已同步至本规格；技术选择仍作为实施建议。本文只定义产品与验收要求，不授权进入实现阶段。
+状态：产品待审阅事项已逐项确认，并已同步至本规格；技术选择仍作为实施建议。本文定义产品与验收要求；用户随后已授权完成全部任务，实施验证见 docs/verification.md。
 
 ## 1. Objective：目标
 
@@ -262,4 +262,4 @@ export function meetsTarget(
 
 界面使用中文并适配手机与桌面，技术栈、目录和测试工具仍为规格中的实施建议。
 
-当前尚未进入 Plan、Tasks 或 Implement 阶段；根据后续请求推进。
+Plan、Tasks 与 Implement 已按后续请求完成，详细任务与验证见 tasks/plan.md 和 docs/verification.md。
